@@ -121,9 +121,10 @@ return {
 		-- Define `root_dir` when needed
 		-- See: https://github.com/neovim/nvim-lspconfig/issues/320
 		-- This is a workaround, maybe not work with some servers.
-		local root_dir = function()
-			return vim.fn.getcwd()
-		end
+		-- local root_dir = function()
+		-- 	return vim.fn.getcwd()
+		-- end
+		local root_dir = lspconfig.util.root_pattern(".git", "setup.py", "pyproject.toml", "requirements.txt")
 
 		-- Use a loop to conveniently call 'setup' on multiple servers and
 		-- map buffer local keybindings when the language server attaches.
@@ -136,6 +137,7 @@ return {
 			"cssls",
 			"ts_ls",
 			"jedi_language_server",
+			-- "pylsp",
 		}
 
 		-- Call setup
