@@ -1,10 +1,10 @@
 return {
 	{
+		"neovim/nvim-lspconfig",
+		-- Load lspconfig first
+	},
+	{
 		"williamboman/mason.nvim",
-		dependencies = {
-			"williamboman/mason-lspconfig.nvim",
-			"neovim/nvim-lspconfig",
-		},
 		config = function()
 			local mason = require("mason")
 			mason.setup()
@@ -13,14 +13,18 @@ return {
 	{
 		"williamboman/mason-lspconfig.nvim",
 		dependencies = {
+			"williamboman/mason.nvim",
 			"neovim/nvim-lspconfig",
 		},
 		config = function()
 			local mason_lspconfig = require("mason-lspconfig")
 			mason_lspconfig.setup({
-				"html",
-				"pyright",
-				"selene",
+				ensure_installed = {
+					"html",
+					"pyright",
+					"lua_ls",
+				},
+				automatic_installation = true,
 			})
 		end,
 	},

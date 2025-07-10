@@ -7,21 +7,27 @@ return {
 		-- for example
 		-- provider = "claude",
 		provider = "openai",
-		openai = {
-			endpoint = "https://api.openai.com/v1",
-			model = "gpt-4.5-preview-2025-02-27", -- your desired model (or use gpt-4o, etc.)
-			-- model = "o1",
-			timeout = 30000, -- timeout in milliseconds
-			temperature = 0, -- adjust if needed
-			max_tokens = 4096,
-		},
-		claude = {
-			endpoint = "https://api.anthropic.com",
-			model = "claude-3-7-sonnet-20250219", -- your desired model
-			timeout = 30000, -- timeout in milliseconds
-			temperature = 0, -- adjust if needed
-			max_tokens = 4096,
-			disable_tools = true,
+		providers = {
+			openai = {
+				endpoint = "https://api.openai.com/v1",
+				model = "gpt-4.5-preview-2025-02-27", -- your desired model (or use gpt-4o, etc.)
+				-- model = "o1",
+				timeout = 30000, -- timeout in milliseconds
+				extra_request_body = {
+					temperature = 0, -- adjust if needed
+					max_tokens = 4096,
+				},
+			},
+			claude = {
+				endpoint = "https://api.anthropic.com",
+				model = "claude-3-7-sonnet-20250219", -- your desired model
+				timeout = 30000, -- timeout in milliseconds
+				extra_request_body = {
+					temperature = 0, -- adjust if needed
+					max_tokens = 4096,
+				},
+				disable_tools = true,
+			},
 		},
 	},
 	-- if you want to build from source then do `make BUILD_FROM_SOURCE=true`
