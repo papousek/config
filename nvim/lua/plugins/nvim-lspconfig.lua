@@ -11,69 +11,7 @@
 return {
 	"neovim/nvim-lspconfig",
 	config = function()
-		local lsp_status_ok, lspconfig = pcall(require, "lspconfig")
-		if not lsp_status_ok then
-			return
-		end
-
-		local cmp_status_ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
-		if not cmp_status_ok then
-			return
-		end
-
-		-- Add additional capabilities supported by nvim-cmp
-		-- See: https://github.com/neovim/nvim-lspconfig/wiki/Autocompletion
-		local capabilities = vim.lsp.protocol.make_client_capabilities()
-		capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
-
-		-- Use an on_attach function to only map the following keys
-		-- after the language server attaches to the current buffer
-		local on_attach = function(client, bufnr)
-			-- Enable completion triggered by <c-x><c-o>
-			--vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-
-			-- Highlighting references.
-			-- See: https://sbulav.github.io/til/til-neovim-highlight-references/
-			-- for the highlight trigger time see: `vim.opt.updatetime`
-			if client.server_capabilities.documentHighlightProvider then
-				vim.api.nvim_create_augroup("lsp_document_highlight", { clear = true })
-				vim.api.nvim_clear_autocmds({ buffer = bufnr, group = "lsp_document_highlight" })
-				vim.api.nvim_create_autocmd("CursorHold", {
-					callback = vim.lsp.buf.document_highlight,
-					buffer = bufnr,
-					group = "lsp_document_highlight",
-					desc = "Document Highlight",
-				})
-				vim.api.nvim_create_autocmd("CursorMoved", {
-					callback = vim.lsp.buf.clear_references,
-					buffer = bufnr,
-					group = "lsp_document_highlight",
-					desc = "Clear All the References",
-				})
-			end
-
-			-- Mappings.
-			-- See `:help vim.lsp.*` for documentation on any of the below functions
-			local bufopts = { noremap = true, silent = true, buffer = bufnr }
-			vim.keymap.set("n", "gD", vim.lsp.buf.declaration, bufopts)
-			vim.keymap.set("n", "gd", vim.lsp.buf.definition, bufopts)
-			vim.keymap.set("n", "K", vim.lsp.buf.hover, bufopts)
-			vim.keymap.set("n", "gi", vim.lsp.buf.implementation, bufopts)
-			vim.keymap.set("n", "<C-k>", vim.lsp.buf.signature_help, bufopts)
-			vim.keymap.set("n", "<space>wa", vim.lsp.buf.add_workspace_folder, bufopts)
-			vim.keymap.set("n", "<space>wr", vim.lsp.buf.remove_workspace_folder, bufopts)
-			vim.keymap.set("n", "<space>wl", function()
-				print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
-			end, bufopts)
-			vim.keymap.set("n", "<space>D", vim.lsp.buf.type_definition, bufopts)
-			vim.keymap.set("n", "<space>rn", vim.lsp.buf.rename, bufopts)
-			vim.keymap.set("n", "<space>ca", vim.lsp.buf.code_action, bufopts)
-			vim.keymap.set("n", "gr", vim.lsp.buf.references, bufopts)
-			vim.keymap.set("n", "<space>f", function()
-				vim.lsp.buf.format({ async = true })
-			end, bufopts)
-		end
-
+		lspconfig = require("lspconfig")
 		-- Diagnostic settings:
 		-- see: `:help vim.diagnostic.config`
 		-- Customizing how diagnostics are displayed
@@ -96,12 +34,10 @@ return {
     ]])
 
 		-- Mappings.
-		-- See `:help vim.diagnostic.*` for documentation on any of the below functions
 		local opts = { noremap = true, silent = true }
-		vim.keymap.set("n", "<space>e", vim.diagnostic.open_float, opts)
-		vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, opts)
-		vim.keymap.set("n", "]d", vim.diagnostic.goto_next, opts)
-		vim.keymap.set("n", "<space>q", vim.diagnostic.setloclist, opts)
+		vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
+		vim.keymap.set("n", "gD", vim.lsp.buf.declaration, opts)
+		vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
 
 		--[[
     Language servers setup:
@@ -126,31 +62,44 @@ return {
 		-- end
 		local root_dir = lspconfig.util.root_pattern(".git", "setup.py", "pyproject.toml", "requirements.txt")
 
-		-- Use a loop to conveniently call 'setup' on multiple servers and
-		-- map buffer local keybindings when the language server attaches.
-		-- Add your language server below:
-		local servers = {
-			"bashls",
-			"pyright",
-			"clangd",
-			"html",
-			"cssls",
-			"ts_ls",
-			"jedi_language_server",
-			-- "pylsp",
-		}
-
-		-- Call setup
-		for _, lsp in ipairs(servers) do
-			lspconfig[lsp].setup({
-				on_attach = on_attach,
-				root_dir = root_dir,
-				capabilities = capabilities,
-				flags = {
-					-- default in neovim 0.7+
-					-- debounce_text_changes = 150,
+		lspconfig.pyright.setup({
+			on_attach = function(client, bufnr)
+				-- Only keep diagnostics and hover
+				client.server_capabilities.definitionProvider = false
+				client.server_capabilities.declarationProvider = false
+				client.server_capabilities.referencesProvider = false
+				client.server_capabilities.implementationProvider = false
+				client.server_capabilities.typeDefinitionProvider = false
+				client.server_capabilities.documentSymbolProvider = false
+				client.server_capabilities.workspaceSymbolProvider = false
+				client.server_capabilities.callHierarchyProvider = false
+			end,
+			settings = {
+				python = {
+					analysis = {
+						typeCheckingMode = "basic",
+					},
 				},
-			})
-		end
+			},
+		})
+
+		lspconfig.pylsp.setup({
+			settings = {
+				pylsp = {
+					plugins = {
+						pycodestyle = {
+							enabled = true,
+							maxLineLength = 120,
+						},
+						pyflakes = {
+							enabled = true,
+						},
+						pylint = {
+							enabled = false,
+						},
+					},
+				},
+			},
+		})
 	end,
 }

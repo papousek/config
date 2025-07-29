@@ -1,19 +1,12 @@
 return {
 	{
-		"neovim/nvim-lspconfig",
-		-- Load lspconfig first
+		"mason-org/mason.nvim",
+		opts = {},
 	},
 	{
-		"williamboman/mason.nvim",
-		config = function()
-			local mason = require("mason")
-			mason.setup()
-		end,
-	},
-	{
-		"williamboman/mason-lspconfig.nvim",
+		"mason-org/mason-lspconfig.nvim",
 		dependencies = {
-			"williamboman/mason.nvim",
+			"mason-org/mason.nvim",
 			"neovim/nvim-lspconfig",
 		},
 		config = function()
